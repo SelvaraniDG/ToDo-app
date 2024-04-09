@@ -2,6 +2,6 @@
     "env": {
         "MONGO_USER": "selvaranicr",
         "MONGO_PASSWORD": "7wiucS9BMZaBNQGd",
-        "MONGO_DB": "sample_mflix"
+        "MONGO_DB": "Todo-Database"
     }
 }
