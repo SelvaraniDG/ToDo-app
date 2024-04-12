@@ -3,9 +3,10 @@ import React from 'react';
 type Props = TodoProps & {
     updateTodo: (todo: ITodo) => void
     deleteTodo: (_id: string) => void
+    saveTodo: any
   }
   
-  const Todo: React.FC<Props> = ({ todo, updateTodo, deleteTodo }) => {
+  const Todo: React.FC<Props> = ({ todo, updateTodo, deleteTodo, saveTodo }) => {
     const checkTodo: string = todo.status ? `line-through` : ""
     return (
       <div className="Card">
