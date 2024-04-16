@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, createTheme, ThemeProvider, Box, TextField, Button, FormControlLabel, Checkbox, Grid, Link } from '@mui/material';
-
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 
 
 
@@ -80,25 +81,43 @@ const LoginForm: React.FC = () => {
           sx={{ margin: '0 auto' }}
         >
           <Box display='flex' bgcolor="rgba(255, 255, 255, 0.8)" fontWeight='Bold' marginBottom={4} borderRadius={4} padding={"10px 30px"}><Typography>Log in</Typography></Box>
-          <TextField 
-            label="Username" 
+          <TextField fullWidth
+            label={(
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountCircleOutlinedIcon style={{ marginRight: 8 }} /> {/* Username icon */}
+                Username
+              </Box>
+            )}
             margin='normal' 
             type='text' 
             InputLabelProps={{ style: { color: 'black' } }}
             InputProps={{ style: { backgroundColor: 'rgba(255, 255, 255, 0.8)', color: 'black' } }}
-            sx={{ width: '100%' }}
+            sx={{
+              '& .MuiInputBase-root': {
+                borderRadius: '20px', // Adjust the value to change the roundness
+              },
+            }}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             error={!!errors.username}
             helperText={errors.username}
           />
-          <TextField 
-            label="Password" 
+          <TextField fullWidth
+            label={(
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <LockOutlinedIcon style={{ marginRight: 8 }} /> {/* Password icon */}
+                Password
+              </Box>
+            )} 
             margin='normal' 
             type='password' 
             InputLabelProps={{ style: { color: 'black' } }}
             InputProps={{ style: { backgroundColor: 'rgba(255, 255, 255, 0.8)', color: 'black' } }}
-            sx={{ width: '100%' }}
+            sx={{
+              '& .MuiInputBase-root': {
+                borderRadius: '20px', // Adjust the value to change the roundness
+              },
+            }}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             error={!!errors.password}

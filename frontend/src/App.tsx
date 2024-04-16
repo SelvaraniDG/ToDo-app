@@ -9,7 +9,6 @@ function App() {
   
   return (
     <>
-    {/* <HomePage /> */}
     <Routes>
       <Route path='/' Component={LoginForm}/>
       <Route path='/register' Component={Register}/>

@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, createTheme, ThemeProvider, Box, TextField, Button, Grid, Link } from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+
 
 function Register() {
   const theme = createTheme({
@@ -76,37 +80,64 @@ function Register() {
           bgcolor="rgba(168, 218, 253, 0.8)"
         >
           <Box display='flex' bgcolor="rgba(255, 255, 255, 0.8)" fontWeight='Bold' marginBottom={4} borderRadius={4} padding={"10px 30px"}><Typography>Register</Typography></Box>
-          <TextField 
-            label="Email" 
+          <TextField fullWidth
+            label={(
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <EmailOutlinedIcon style={{ marginRight: 8 }} /> {/* Password icon */}
+                Email
+              </Box>
+            )}  
             margin='normal' 
             type='email' 
             InputLabelProps={{ style: { color: 'black' } }}
             InputProps={{ style: { backgroundColor: 'rgba(255, 255, 255, 0.8)', color: 'black' } }}
-            sx={{ width: '100%' }}
+            sx={{
+              '& .MuiInputBase-root': {
+                borderRadius: '20px', // Adjust the value to change the roundness
+              },
+            }}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             error={!!errors.email}
             helperText={errors.email}
           />
-          <TextField 
-            label="Username" 
+          <TextField fullWidth
+            label={(
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <AccountCircleOutlinedIcon style={{ marginRight: 8 }} /> {/* Username icon */}
+                Username
+              </Box>
+            )}
             margin='normal' 
             type='text' 
             InputLabelProps={{ style: { color: 'black' } }}
             InputProps={{ style: { backgroundColor: 'rgba(255, 255, 255, 0.8)', color: 'black' } }}
-            sx={{ width: '100%' }}
+            sx={{
+              '& .MuiInputBase-root': {
+                borderRadius: '20px', // Adjust the value to change the roundness
+              },
+            }}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             error={!!errors.username}
             helperText={errors.username}
           />
-          <TextField 
-            label="Password" 
+          <TextField fullWidth
+            label={(
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <LockOutlinedIcon style={{ marginRight: 8 }} /> {/* Password icon */}
+                Password
+              </Box>
+            )} 
             margin='normal' 
             type='password' 
             InputLabelProps={{ style: { color: 'black' } }}
             InputProps={{ style: { backgroundColor: 'rgba(255, 255, 255, 0.8)', color: 'black' } }}
-            sx={{ width: '100%' }}
+            sx={{
+              '& .MuiInputBase-root': {
+                borderRadius: '20px', // Adjust the value to change the roundness
+              },
+            }}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             error={!!errors.password}
