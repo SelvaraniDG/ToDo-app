@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
-import { Box, IconButton, Typography, TextField } from '@mui/material';
-import CheckBoxOutlineBlankOutlinedIcon from '@mui/icons-material/CheckBoxOutlineBlankOutlined';
-import CheckBoxOutlinedIcon from '@mui/icons-material/CheckBoxOutlined';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import AddIcon from '@mui/icons-material/Add';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import CheckIcon from '@mui/icons-material/Check';
-import CancelIcon from '@mui/icons-material/Cancel';
-
+import React, { useState, useEffect } from "react";
+import { Box, IconButton, Typography, TextField } from "@mui/material";
+import CheckBoxOutlineBlankOutlinedIcon from "@mui/icons-material/CheckBoxOutlineBlankOutlined";
+import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import AddIcon from "@mui/icons-material/Add";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import CheckIcon from "@mui/icons-material/Check";
+import CancelIcon from "@mui/icons-material/Cancel";
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 
 interface Todo {
+  parentId?: string;
   _id: string;
   todo: string;
   status: boolean;
@@ -18,14 +19,69 @@ interface Todo {
 
 interface TodoItemProps {
   todo: Todo;
+  // todos: Todo[];
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
-  createNestedTodo: (parentTodoId: string, nestedContent: string) => void;
+  // createNestedTodo: (parentTodoId: string, nestedContent: string) => void;
 }
 
-const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos, createNestedTodo }) => {
+const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTodo, setEditedTodo] = useState(todo.todo);
-  const [nestedContent, setNestedContent] = useState('')
+  const [nestedContent, setNestedContent] = useState("");
+  const [showNestedTextField, setShowNestedTextField] = useState(false);
+
+
+  useEffect(() => {
+    if (todo.nestedTodos) {
+      const filteredNestedTodos = todo.nestedTodos.filter(nested => nested.parentId === todo._id);
+      setEditedTodo(filteredNestedTodos);
+    }
+  }, [todo]);
+
+  const renderNestedTodos = () => {
+    return addNestedTodo.map((nestedTodo: any) => (
+      <Box
+        key={nestedTodo._id}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          backgroundColor: "rgba(255, 192, 203, 0.8)",
+          padding: "8px",
+          borderRadius: "20px",
+          marginBottom: "5px",
+          paddingLeft: "20px", // Adjust the indentation for nested todos
+          marginTop: "5px",
+        }}
+      >
+        <IconButton
+          color="inherit"
+          onClick={() => updateTodo(nestedTodo._id, nestedTodo.status)}
+        >
+          {nestedTodo.status ? (
+            <CheckBoxOutlinedIcon />
+          ) : (
+            <CheckBoxOutlineBlankOutlinedIcon />
+          )}
+        </IconButton>
+        <Typography
+          sx={{
+            flex: 1,
+            marginLeft: "8px",
+            textDecoration: nestedTodo.status ? "line-through" : "none",
+          }}
+        >
+          {nestedTodo.todo}
+        </Typography>
+        <IconButton
+          color="inherit"
+          onClick={() => deleteTodo(nestedTodo._id)}
+        >
+          <DeleteOutlinedIcon />
+        </IconButton>
+      </Box>
+    ));
+  };
 
 
   // FOR UPDATING THE TODO IF USING ITS ID AND THE STATUS.
@@ -37,10 +93,10 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos, createNestedTodo })
         "Content-Type": "application/json",
       },
     });
-  
+
     const json = await res.json();
     if (json.acknowledged) {
-      setTodos(currentTodos => {
+      setTodos((currentTodos) => {
         return currentTodos.map((currentTodo) => {
           if (currentTodo._id === todoId) {
             return { ...currentTodo, status: !currentTodo.status };
@@ -65,7 +121,6 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos, createNestedTodo })
     }
   };
 
-
   const handleEdit = () => {
     setIsEditing(true);
   };
@@ -73,125 +128,197 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, setTodos, createNestedTodo })
   const handleSaveEdit = async () => {
     try {
       const res = await fetch(`/api/editTodos/${todo._id}`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify({ todo: editedTodo }),
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
       const json = await res.json();
       if (json.updatedTodo) {
         setTodos((prevTodos) =>
           prevTodos.map((prevTodo) =>
-            prevTodo._id === todo._id ? { ...prevTodo, todo: editedTodo } : prevTodo
+            prevTodo._id === todo._id
+              ? { ...prevTodo, todo: editedTodo }
+              : prevTodo
           )
         );
       }
     } catch (error) {
-      console.error('Error updating todo:', error);
+      console.error("Error updating todo:", error);
     } finally {
       setIsEditing(false); // Toggle editing mode off
     }
   };
-
 
   const handleCancelEdit = () => {
     setIsEditing(false);
     setEditedTodo(todo.todo); // Reset editedTodo to original value
   };
 
+  const createNewNestedTodo = async (_id: string, nestedContent: string) => {
+    if (nestedContent.trim() !== "") {
+      try {
+        const res = await fetch(`/api/nestedTodos`, {
+          method: "POST",
+          body: JSON.stringify({ todo: nestedContent, parent_id: todo._id }), // Passing parent_id to the API here
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const newNestedTodo: Todo = await res.json();
+        setTodos((prevTodos) =>
+          prevTodos.map((prevTodo) =>
+            prevTodo._id === todo._id
+              ? {
+                  ...prevTodo,
+                  nestedTodos: [...(prevTodo.nestedTodos || []), newNestedTodo],
+                }
+              : prevTodo
+          )
+        );
+        setNestedContent("");
+      } catch (error) {
+        console.error("Error creating nested todo:", error);
+      }
+    }
+  };
+
+  const handleCreateNestedTodo = () => {
+    setShowNestedTextField(true); // for showing the text field for adding nested todo
+  };
+
+  // Function to handle adding the nested todo
+  const addNestedTodo = async () => {
+    if (nestedContent.trim() !== "") {
+      createNewNestedTodo(todo._id, nestedContent);
+      setNestedContent(""); // Reset the text field
+      setShowNestedTextField(false); // Hide the text field
+    }
+  };
+
   return (
+    <>
     <Box
       sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        color: 'black',
-        padding: '8px',
-        borderRadius: '20px',
-        marginBottom: '10px',
+        display: "flex",
+        flexDirection: "column", // Ensure todos and nested todos are displayed vertically
+        backgroundColor: "rgba(255, 255, 255, 0.8)",
+        color: "black",
+        padding: "8px",
+        borderRadius: "20px",
+        marginBottom: "10px",
       }}
     >
-      <IconButton color='inherit' onClick={() => updateTodo(todo._id, todo.status)}>
-        {todo.status ? <CheckBoxOutlinedIcon /> : <CheckBoxOutlineBlankOutlinedIcon />}
-      </IconButton>
-      {isEditing ? (
-        <TextField
-          value={editedTodo}
-          onChange={(e) => setEditedTodo(e.target.value)}
-        />
-      ) : (
-        <Typography
-          sx={{
-            flex: 1,
-            marginLeft: '8px',
-            textDecoration: todo.status ? 'line-through' : 'none',
-          }}
+      {/* Parent Todo */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <IconButton
+          color="inherit"
+          onClick={() => updateTodo(todo._id, todo.status)}
         >
-          {todo.todo}
-        </Typography>
-      )}
-      <Box sx={{ display: 'flex' }}>
-        {isEditing ? (
-          <>
-            <IconButton onClick={handleSaveEdit}>
-              <CheckIcon />
-            </IconButton>
-            <IconButton onClick={handleCancelEdit}>
-              <CancelIcon />
-            </IconButton>
-          </>
-        ) : (
-          <IconButton color='inherit' onClick={handleEdit}>
-            <EditOutlinedIcon />
-          </IconButton>
-        )}
-        <IconButton color='inherit' onClick={() => deleteTodo(todo._id)}>
-          <DeleteOutlinedIcon />
+          {todo.status ? (
+            <CheckBoxOutlinedIcon />
+          ) : (
+            <CheckBoxOutlineBlankOutlinedIcon />
+          )}
         </IconButton>
-        <IconButton color='inherit' onClick={() => createNestedTodo(todo._id, nestedContent)}>
+        {isEditing ? (
+          <TextField
+            fullWidth
+            value={editedTodo}
+            onChange={(e) => setEditedTodo(e.target.value)}
+            sx={{
+              flexGrow: 1,
+              marginLeft: "8px",
+              textDecoration: todo.status ? "line-through" : "none",
+            }}
+          />
+        ) : (
+          <Typography
+            sx={{
+              flex: 1,
+              marginLeft: "8px",
+              textDecoration: todo.status ? "line-through" : "none",
+            }}
+          >
+            {todo.todo}
+          </Typography>
+        )}
+        {/* Action Buttons */}
+        <Box sx={{ display: "flex"}}>
+          {isEditing ? (
+            <>
+              <IconButton onClick={handleSaveEdit}>
+                <CheckIcon />
+              </IconButton>
+              <IconButton onClick={handleCancelEdit}>
+                <CancelIcon />
+              </IconButton>
+            </>
+          ) : (
+            <IconButton color="inherit" onClick={handleEdit}>
+              <EditOutlinedIcon />
+            </IconButton>
+          )}
+          <IconButton color="inherit" onClick={() => deleteTodo(todo._id)}>
+            <DeleteOutlinedIcon />
+          </IconButton>
+          <IconButton color="inherit" onClick={handleCreateNestedTodo}>
           <AddIcon />
         </IconButton>
-      </Box>
-      {todo.nestedTodos && (
-        <Box sx={{ marginLeft: '48px' }}>
-          {todo.nestedTodos.map(nestedTodo => (
-            <Box
-              key={nestedTodo._id}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                backgroundColor: '#FFC0CB', //pink
-                color: 'red',
-                padding: '8px',
-                borderRadius: '20px',
-                marginBottom: '10px',
-                marginLeft: '24px',
-              }}
-            >
-              <IconButton color='inherit' onClick={() => updateTodo(nestedTodo._id, nestedTodo.status)}>
-                {nestedTodo.status ? <CheckBoxOutlinedIcon /> : <CheckBoxOutlineBlankOutlinedIcon />}
-              </IconButton>
-              <Typography
-                sx={{
-                  flex: 1,
-                  marginLeft: '8px',
-                  textDecoration: nestedTodo.status ? 'line-through' : 'none',
-                }}
-              >
-                {nestedTodo.todo}
-              </Typography>
-              <IconButton color='inherit' onClick={() => deleteTodo(nestedTodo._id)}>
-                <DeleteOutlinedIcon />
-              </IconButton>
-            </Box>
-          ))}
         </Box>
-      )}
-    </Box>
+  </Box>
+
+          {renderNestedTodos()}
+        </Box>
+    {showNestedTextField && (
+        <Box sx={{display: "flex"}}>
+          <ArrowRightIcon sx={{ color: "white", fontSize: 50, marginLeft: "20px", }} />
+          <TextField 
+          label={
+            <Box sx={{ display: "flex", alignItems: "right", justifyContent: "right",  marginBottom: "10px" }}>
+              Nested Todo...
+            </Box>
+          }
+          margin = "none"
+          type="text"
+
+          InputLabelProps={{ style: { color: "black" } }}
+          InputProps={{
+            style: {
+              backgroundColor: "rgba(255, 255, 255, 0.5)",
+              color: "black",
+            },
+            endAdornment: (
+              <IconButton color="inherit" onClick={addNestedTodo}>
+            <AddIcon />
+          </IconButton>
+            ),
+          }}
+          sx={{
+            flexGrow: 1,
+            width: "100%",
+            "& .MuiInputBase-root": {
+              borderRadius: "20px",
+              border: "none",
+              marginBottom: "8px",
+              // marginLeft: "60px",
+            },
+          }}
+            value={nestedContent}
+            onChange={(e) => setNestedContent(e.target.value)}
+          />
+        </Box>
+    )}
+    </>
   );
+  
 };
 
 export default TodoItem;

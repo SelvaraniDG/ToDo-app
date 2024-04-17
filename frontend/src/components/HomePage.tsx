@@ -12,6 +12,7 @@ interface Todo {
   todo: string;
   status: boolean;
   nestedTodos?: Todo[];
+  parentId?: string;
 }
 
 const HomePage = () => {
@@ -47,35 +48,7 @@ const HomePage = () => {
     }
   }
 
-
-  //creating a nestedtodo
-  const createNestedTodo = (parentTodoId: string, nestedContent: string) => {
-    if (nestedContent.trim() !== "") {
-      setTodos(prevTodos => {
-        return prevTodos.map(todo => {
-          if (todo._id === parentTodoId) {
-            return {
-              ...todo,
-              nestedTodos: [
-                ...(todo.nestedTodos || []),
-                {
-                  _id: Math.random().toString(),
-                  todo: nestedContent,
-                  status: false,
-                  parent_id: parentTodoId,
-                },
-              ],
-            };
-          }
-          return todo;
-        });
-      });
-      setNestedContent(""); //to clear
-
-    }
-  };
-  
-  
+ 
   
 
 
@@ -168,9 +141,7 @@ const HomePage = () => {
               <TodoItem
                 key={todo._id}
                 todo={todo}
-                setTodos={setTodos}
-                createNestedTodo={createNestedTodo}
-                
+                setTodos={setTodos} 
               />
             ))}
           </Box>
