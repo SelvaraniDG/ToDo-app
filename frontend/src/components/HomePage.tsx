@@ -18,7 +18,6 @@ interface Todo {
 const HomePage = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [content, setContent] = useState("");
-  const [nestedContent, setNestedContent] = useState("");
 
   useEffect(() => {
     async function getTodos() {
@@ -141,7 +140,7 @@ const HomePage = () => {
               <TodoItem
                 key={todo._id}
                 todo={todo}
-                setTodos={setTodos} 
+                setTodos={setTodos}
               />
             ))}
           </Box>
