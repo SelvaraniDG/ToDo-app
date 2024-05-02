@@ -1,4 +1,4 @@
-# React Todo App
+# React ToDo App
 
 This is a Todo App built with React, TypeScript, Material-UI, MongoDB, Express, and Node. It allows users to manage their todos with features like adding, editing, checking/unchecking, deleting, and adding nested todos.
 
